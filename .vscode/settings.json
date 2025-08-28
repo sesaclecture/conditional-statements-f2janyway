@@ -1,0 +1,5 @@
+{
+    "python.analysis.supportAllPythonDocuments": true,
+    "python.analysis.enableAsyncProgram": true,
+    "python.languageServer": "Pylance"
+}
