@@ -13,6 +13,7 @@ from enum import Enum
 import json
 
 class ActionFlow(Enum):
+     SIGN_UP = "sign_up"
      LOGIN = "login"
      SELECT_MENU = "select_menu"
      EDIT = "edit"
@@ -38,20 +39,74 @@ user_permissions_dict = {
 }
 
 user_db = {
-     "admin": {"passwd": "0000", "role": "admin"},
-     "editor": {"passwd": "0000", "role": "editor"},
-     "mark": {"passwd": "0000", "role": "viewer"},
-     "james": {"passwd": "0000", "role": "viewer"},
-     "tom": {"passwd": "0000", "role": "viewer"}
+     "admin": {"passwd": "0000", "role": "admin", "name": "admin", "birth": "1980-01-01"},
+     "editor": {"passwd": "0000", "role": "editor", "name": "editor", "birth": "1985-05-05"},
+     "mark": {"passwd": "0000", "role": "viewer", "name": "Mark", "birth": "1990-03-10"},
+     "james": {"passwd": "0000", "role": "viewer", "name": "James", "birth": "1992-07-15"},
+     "tom": {"passwd": "0000", "role": "viewer", "name": "Tom", "birth": "1995-12-20"}
 }
+print(json.dumps(user_db, indent=2))
 
 
-action_flow = ActionFlow.LOGIN
-print("login")
+
+# Initial entry: select login or sign up
+action_flow = None
 username = None
 passwd = None
 user = None
+
+while action_flow not in [ActionFlow.LOGIN, ActionFlow.SIGN_UP]:
+     print("1. Login")
+     print("2. Sign Up")
+     choice = input("Select number: ")
+     if choice == "1":
+          action_flow = ActionFlow.LOGIN
+     elif choice == "2":
+          action_flow = ActionFlow.SIGN_UP
+     else:
+          print("Invalid input. Please select again.")
+
+# Sign up logic
+while action_flow == ActionFlow.SIGN_UP:
+          print("--- Sign Up ---")
+          new_username = input("New username: ")
+          if new_username in user_db:
+               print("Username already exists.")
+               continue
+          # Password security: at least 3 characters
+          while True:
+               new_passwd = input("Password (at least 3 characters): ")
+               if len(new_passwd) < 3:
+                    print("Password must be at least 3 characters.")
+               else:
+                    break
+          new_name = input("Name: ")
+          # Birthdate validation: must be YYYY-MM-DD and a valid date
+          import re
+          import datetime
+          while True:
+               new_birth = input("Birthdate (YYYY-MM-DD): ")
+               if not re.match(r"^\\d{4}-\\d{2}-\\d{2}$", new_birth):
+                    print("Birthdate must be in YYYY-MM-DD format.")
+                    continue
+               try:
+                    datetime.datetime.strptime(new_birth, "%Y-%m-%d")
+                    break
+               except ValueError:
+                    print("Invalid date. Please enter a valid birthdate.")
+          # Default role is viewer
+          user_db[new_username] = {
+               "passwd": new_passwd,
+               "role": "viewer",
+               "name": new_name,
+               "birth": new_birth
+          }
+          print(f"Sign up complete! Please login, {new_username}.")
+          action_flow = ActionFlow.LOGIN
+
+# Login logic
 while action_flow == ActionFlow.LOGIN:
+     print("--- Login ---")
      username = input("username: ")
      passwd = input("password: ")
 
@@ -96,13 +151,42 @@ while action_flow == ActionFlow.SELECT_MENU:
                edit_username = input("put username to edit:")
 
           if edit_username == username or user_role == Role.ADMIN or user_role == Role.EDITOR:
-               if edit_username in user_db:
-                    new_passwd = input(f"put new password({edit_username}): ")
-                    user_db[edit_username]["passwd"] = new_passwd
-                    print(f"{edit_username} < changed")
-                    print(json.dumps(user_db, indent=4))
-               else:
-                    print(f"{edit_username} < not exists")
+                  if edit_username in user_db:
+                         print(f"Editing user: {edit_username}")
+                         # Edit password
+                         while True:
+                              new_passwd = input(f"New password (at least 3 characters, leave blank to keep): ")
+                              if new_passwd == "":
+                                   break
+                              if len(new_passwd) < 3:
+                                   print("Password must be at least 3 characters.")
+                              else:
+                                   user_db[edit_username]["passwd"] = new_passwd
+                                   break
+                         # Edit name
+                         new_name = input(f"New name (leave blank to keep): ")
+                         if new_name:
+                              user_db[edit_username]["name"] = new_name
+                         # Edit birthdate
+                         import re
+                         import datetime
+                         while True:
+                              new_birth = input(f"New birthdate (YYYY-MM-DD, leave blank to keep): ")
+                              if new_birth == "":
+                                   break
+                              if not re.match(r"^\\d{4}-\\d{2}-\\d{2}$", new_birth):
+                                   print("Birthdate must be in YYYY-MM-DD format.")
+                                   continue
+                              try:
+                                   datetime.datetime.strptime(new_birth, "%Y-%m-%d")
+                                   user_db[edit_username]["birth"] = new_birth
+                                   break
+                              except ValueError:
+                                   print("Invalid date. Please enter a valid birthdate.")
+                         print(f"{edit_username} < changed")
+                         print(json.dumps(user_db, indent=4))
+                  else:
+                         print(f"{edit_username} < not exists")
           else:
                print(
                    f"no permission to edit or {edit_username} is not your account")
