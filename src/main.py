@@ -87,7 +87,8 @@ while action_flow == ActionFlow.SIGN_UP:
     import datetime
     while True:
         new_birth = input("Birthdate (YYYY-MM-DD): ")
-        if not re.match(r"^\d{4}-\d{2}-\d{2}$", new_birth):
+        print(new_birth)
+        if  not re.match(r"^\d{4}-\d{2}-\d{2}$", new_birth):
             print("Birthdate must be in YYYY-MM-DD format.")
             continue
         try:
@@ -177,7 +178,7 @@ while action_flow == ActionFlow.SELECT_MENU:
                         f"New birthdate (YYYY-MM-DD, leave blank to keep): ")
                     if new_birth == "":
                         break
-                    if not re.match(r"^\\d{4}-\\d{2}-\\d{2}$", new_birth):
+                    if not re.match(r"^\d{4}-\d{2}-\d{2}$", new_birth):
                         print("Birthdate must be in YYYY-MM-DD format.")
                         continue
                     try:
